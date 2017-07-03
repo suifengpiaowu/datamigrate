@@ -8,7 +8,7 @@ return  array(
 	        'port' => 3306,
 	        'username' => 'root',
 	        'password' => 'root12',
-	        'dbname' => 'zjtest',
+	        'dbname' => 'bjshjs_test',
 	        'prefix' => '',
 	        'pconnect' => 0,
 	        'charset' => 'utf8'

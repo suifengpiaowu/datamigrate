@@ -3,7 +3,7 @@
 /**
  * 模型基类
  */
-class Model extends db{
+class Model{
 	
 	protected $_model;
 

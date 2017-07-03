@@ -43,10 +43,6 @@ function config($fileconf){
 	if(!is_file($fileconf))
 	{
 		echo $fileconf.":文件不存在！";
-	}
-	if(!is_array($config))
-	{
-		echo $fileconf.":不是数组，不正确！";
 	}else{
 		return $config;
 	}

@@ -52,7 +52,6 @@ class log
 
 	function append($msg, $type = self::DEBUG)
 	{
-        echo 1111;
 		if (!isset($this->_priorities[$type])) return;
         $this->_log[] = array(time(), $msg, $type);
         $this->_cached_size += strlen($msg);
@@ -104,7 +103,6 @@ class log
             $string .= date('c', $time) . " {$type}: {$msg}\n";
 
         }
-        var_dump($string);
         if ($string)
         {
         	write_file($this->_filename, $string, true);
