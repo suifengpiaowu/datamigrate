@@ -28,6 +28,8 @@ class UserController extends Controller {
 	}
 
 	public function test(){
+		chromephp('woshi xixi');
+		echo 123;
 		$password = md5('abc123');
 		echo "<hr/>";
 		echo md5($password.'e99a18');

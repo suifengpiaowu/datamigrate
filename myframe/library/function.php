@@ -71,3 +71,40 @@ function write_file($file, $data, $append = false)
     }
 	return $result;
 }
+
+/**
+ * @gn
+ * @DateTime  2017-09-19T15:10:18+0800
+ * @param     [type]                   $pmt [description]
+ * @return    [type]                        [description]
+ */
+function chromephp($message = NULL){
+
+	$type = gettype($message);
+
+	static 	$handler = false;
+	if(!$handler){
+		helper('PhpConsole.__autoload');
+		
+		/*// 设置输出控制台的密码
+		$password = 'ltmz';
+		if(!$password) {
+			echo '请设置PHPConsole密码！';
+			return true;
+		}
+		$connector = PhpConsole\Connector::getInstance();
+		$connector->setPassword($password);
+		if(!$connector->isAuthorized())
+		{
+			$connector->getDebugDispatcher()->dispatchDebug('输入的密码错误！');
+			return true;
+		}else{
+			$connector->getDebugDispatcher()->dispatchDebug('恭喜你通过了验证！');
+		}*/
+
+		$handler = PhpConsole\Handler::getInstance();
+		$handler->start();
+	} 
+
+	$handler->debug($message, 'PHP-Console-'.$type);
+}
