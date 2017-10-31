@@ -1,18 +1,19 @@
 <?php 
 /*
-* 	自定义函数集合
+* 	@by gn
+* 	@自定义函数集合
 */
 
 
 /**
  * 加载助手类库
  *	
- * @param $libname string 文件在'library/helper下的文件名称，有目录使用 . 隔开，文件名称需要与实例化的类名保持一致
- * @return $libname 返回实例化的对象
+ * @param  [string] $libname[]文件在'library/helper下的文件名称，有目录使用 . 隔开，文件名称需要与实例化的类名保持一致
+ * @return [] [无]
  */
 function helper($libname){
 	$dirs = explode('.', $libname);
-	$libname = end($dirs);
+	$classname = end($dirs);
 	$filename = ROOT.DS.'library'.DS.'helper';
 	foreach ($dirs as $k => $v)
 	{
@@ -30,6 +31,36 @@ function helper($libname){
 	return;
 }
 
+/**
+ * 加载model类
+ *	
+ * @param  [string] $model [加载在'application/models下的文件名称，
+ *         									有目录使用 . 隔开，
+ *         									文件名称需要与实例化的类名保持一致，
+ *         									注意：参数的大小写与实际文件的大小写一致
+ *         									]
+ * @return [object] $return 返回实例化的对象
+ */
+function model($model){
+	$dirs = explode('.', $model);
+	$classname = end($dirs);
+	$filename = ROOT.DS.'application'.DS.'models';
+	foreach ($dirs as $k => $v)
+	{
+		$filename .= DS.$v;
+	}
+
+	$filename .= ".php";
+
+	if(!is_file($filename))
+	{
+		echo $filename.":文件不存在！";
+	}
+
+	require_once($filename);
+	$return = new $classname();
+	return $return;
+}
 
 /**
  * 加载配置文件
@@ -63,20 +94,19 @@ function write_file($file, $data, $append = false)
 
     $result = false;
 
-    if ($fp = @fopen($file, $append ? 'ab' : 'wb'))
-    {
-        $result = @fwrite($fp, $data);
-        @fclose($fp);
-        @chmod($file, 0777);
-    }
+  if ($fp = @fopen($file, $append ? 'ab' : 'wb'))
+  {
+    $result = @fwrite($fp, $data);
+    @fclose($fp);
+    @chmod($file, 0777);
+  }
 	return $result;
 }
 
 /**
- * @gn
- * @DateTime  2017-09-19T15:10:18+0800
- * @param     [type]                   $pmt [description]
- * @return    [type]                        [description]
+ * 将结果输入到浏览器控制台，chrome浏览器使用，需要安装phpconsole插件
+ * @param     [all]                   $message [多类型的数据格式，输出内容到控制台]
+ * @return    []                        [无]
  */
 function console($message = NULL){
 
@@ -112,19 +142,20 @@ function console($message = NULL){
 /**
  * @gn
  * @
- * @param     [type]                   $pmt [description]
- * @return    [type]                        [description]
+ * @param     [string]                   $string [记录的字符内容]
+ * @param     [string]                   $filenam [文件名]
+ * @return    []                        [无返回结果]
  */
 function insertlog($string,$filename){
-		//引入日志模型
-		static 	$log = false;
-		if(!$log){
-			helper("log");
-			$log = new log(); 
-		}
+	//引入日志模型
+	static 	$log = false;
+	if(!$log){
+		helper("log");
+		$log = new log(); 
+	}
 
-		$datatime = date('Y-m-d',time());
-		$log->set_options(array('log'=>true,'filename'=>$filename.'/'.$datatime.'.log'));
-		$log->append($string, log::INFO);
+	$datatime = date('Y-m-d',time());
+	$log->set_options(array('log'=>true,'filename'=>$filename.'/'.$datatime.'.log'));
+	$log->append($string, log::INFO);
 }
 
