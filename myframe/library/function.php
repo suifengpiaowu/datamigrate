@@ -78,7 +78,7 @@ function write_file($file, $data, $append = false)
  * @param     [type]                   $pmt [description]
  * @return    [type]                        [description]
  */
-function chromephp($message = NULL){
+function console($message = NULL){
 
 	$type = gettype($message);
 
@@ -108,3 +108,23 @@ function chromephp($message = NULL){
 
 	$handler->debug($message, 'PHP-Console-'.$type);
 }
+
+/**
+ * @gn
+ * @
+ * @param     [type]                   $pmt [description]
+ * @return    [type]                        [description]
+ */
+function insertlog($string,$filename){
+		//引入日志模型
+		static 	$log = false;
+		if(!$log){
+			helper("log");
+			$log = new log(); 
+		}
+
+		$datatime = date('Y-m-d',time());
+		$log->set_options(array('log'=>true,'filename'=>$filename.'/'.$datatime.'.log'));
+		$log->append($string, log::INFO);
+}
+

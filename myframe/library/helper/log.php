@@ -78,13 +78,13 @@ class log
         	// }
         	// $this->_priorities = $arr;
 
-	        if (!is_dir(LOG_PATH))
-	        {
-                helper('folder');
-                folder::create(LOG_PATH);
-	        }
 	        $filename = $this->options['filename'];
 	        $this->_filename = LOG_PATH.$filename;
+            if (!is_dir(dirname($this->_filename)))
+            {
+                helper('folder');
+                folder::create($this->_filename);
+            }
 	        $chunk_size = intval($this->options['cache_chunk_size']);
 	        if ($chunk_size < 1) $chunk_size = 64;
 	        $this->_cache_chunk_size = $chunk_size * 1024;
@@ -103,6 +103,7 @@ class log
             $string .= date('c', $time) . " {$type}: {$msg}\n";
 
         }
+        // var_dump($this->_filename);
         if ($string)
         {
         	write_file($this->_filename, $string, true);
