@@ -4,6 +4,31 @@
 * 	@自定义函数集合
 */
 
+/**
+ * 加载框架类库
+ *	
+ * @param  [string] $libname[]文件在'library/helper下的文件名称，有目录使用 . 隔开，文件名称需要与实例化的类名保持一致
+ * @return [] [无]
+ */
+function library($libname){
+	$dirs = explode('.', $libname);
+	$classname = end($dirs);
+	$filename = ROOT.DS.'library';
+	foreach ($dirs as $k => $v)
+	{
+		$filename .= DS.$v;
+	}
+
+	$filename .= ".class.php";
+
+	if(!is_file($filename))
+	{
+		echo $filename.":文件不存在！";
+	}
+
+	require_once($filename);
+	return;
+}
 
 /**
  * 加载助手类库
@@ -29,6 +54,36 @@ function helper($libname){
 
 	require_once($filename);
 	return;
+}
+
+/**
+ * 加载数据库
+ *	
+ * @param  [array] $config[config文件夹中的数据库连接信息]
+ * @return [] [无]
+ */
+function loadloddb($config){
+	$filename = ROOT.DS.'library'.DS.'db.class.php';
+	require_once($filename);
+
+	static $db = false;
+	if(!$db){
+		$db = new db($config);
+	}
+
+	return $db;
+}
+
+function loadnewdb($config){
+	$filename = ROOT.DS.'library'.DS.'db.class.php';
+	require_once($filename);
+
+	static $db = false;
+	if(!$db){
+		$db = new db($config);
+	}
+
+	return $db;
 }
 
 /**
@@ -89,11 +144,9 @@ function config($fileconf){
  */
 function write_file($file, $data, $append = false)
 {
-	$dir = dirname($file);
-	if (!is_dir($dir)) folder::create($dir);
-
-    $result = false;
-
+	$file = ROOT.'\tmp\logs\\'.$file.'.log';
+  $result = false;
+  
   if ($fp = @fopen($file, $append ? 'ab' : 'wb'))
   {
     $result = @fwrite($fp, $data);
@@ -140,13 +193,13 @@ function console($message = NULL){
 }
 
 /**
- * @gn
- * @
- * @param     [string]                   $string [记录的字符内容]
- * @param     [string]                   $filenam [文件名]
+ * @信息记录到日志文件中，保存地址 ROOT_PATH./tmp/logs [不能自动创建目录，这个问题后续排查]
+ * 
+ * @param     [string]                  $string [记录的字符内容]
+ * @param     [string]                  $filenam [文件名]
  * @return    []                        [无返回结果]
  */
-function insertlog($string,$filename){
+function insertlog($string,$filename = 'logfile'){
 	//引入日志模型
 	static 	$log = false;
 	if(!$log){
@@ -155,7 +208,7 @@ function insertlog($string,$filename){
 	}
 
 	$datatime = date('Y-m-d',time());
-	$log->set_options(array('log'=>true,'filename'=>$filename.'/'.$datatime.'.log'));
+	$log->set_options(array('log'=>true,'filename'=>$filename.$datatime.'.log'));
 	$log->append($string, log::INFO);
 }
 
