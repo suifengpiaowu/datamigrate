@@ -12,7 +12,7 @@ class User extends Model {
 
 		//引入日志模型
 		helper("log");
-		$this->log = new log(); 
+		$this->log = new log();
 		$this->datatime = date('Y-m-d_',time());
 
 		//定义每次查询的数据条数

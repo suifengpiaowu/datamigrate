@@ -8,7 +8,7 @@ return  array(
 	        'port' => 3306,
 	        'username' => 'root',
 	        'password' => 'root12',
-	        'dbname' => 'bjshjs',
+	        'dbname' => 'cmstop_2.0_zgy',
 	        'prefix' => 'cmstop_',
 	        'pconnect' => 0,
 	        'charset' => 'utf8'

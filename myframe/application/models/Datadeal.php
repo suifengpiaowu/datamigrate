@@ -2,7 +2,7 @@
 /**
  * 示例模型
  */
- class Migrate extends Model 
+ class Datadeal extends Model 
 {
 	function __construct() {
 		parent::__construct();

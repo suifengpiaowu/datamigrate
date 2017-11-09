@@ -103,7 +103,7 @@ class log
             $string .= date('c', $time) . " {$type}: {$msg}\n";
 
         }
-        // var_dump($this->_filename);
+        
         if ($string)
         {
         	write_file($this->_filename, $string, true);
