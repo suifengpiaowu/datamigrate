@@ -8,17 +8,18 @@ class Picture extends Model {
 	function __construct() {
 		parent::__construct();
 		$this->_table = "cmstop_content";
-		$this->migrate = model('Migrate');
+		$this->datadeal = model('Datadeal');
 		$this->tags = model('Tags');
 		$this->source = model('Source');
 		$this->property = model('Property');
 		$this->search = model('Search');
 		$this->log = model('Log');
+		$this->related = model('Related');
+		
 		//定义每次查询的数据条数
-		$this->length = 100;
+		$this->length = 1;
 
 		$this->category = config('category');
-
 	}
 
 	/*数据迁移运行*/
@@ -40,7 +41,7 @@ class Picture extends Model {
 			$sql = "select $field from reform_jingtou a,reform_jingtou_data d where a.id=d.id and a.vod=0 order by a.id asc";
 			$data = $this->odb->page($sql,$i,$this->length);
 			// console($i);
-			// var_dump($this->ndb->error());
+			// // var_dump($this->ndb->error());
 			// var_dump($data);
 			// exit;
 			foreach ($data as $key => $value) {
@@ -65,7 +66,7 @@ class Picture extends Model {
 		$option['content']['modelid'] = 2;
 		$option['content']['title'] = addslashes(substr($data['title'],0,200));
 		$option['content']['subtitle'] = addslashes(substr($data['subtitle'],0,120));
-		$option['content']['thumb'] = $this->migrate->imagehandle($data['thumb']);
+		$option['content']['thumb'] = $this->datadeal->imagehandle($data['thumb']);
 		$option['content']['status'] = intval($data['status']) < 99 ? 0 : 6;
 		$option['content']['created'] = $data['inputtime'];
 		$option['content']['createdby'] = 1;
@@ -78,7 +79,7 @@ class Picture extends Model {
 		$option['content']['tags'] = substr($data['keywords'],0,200);
 		$option['content']['sourceid'] = self::insertsource($data);
 
-		$insertsql = $this->migrate->getsql($this->_table,$option['content']);
+		$insertsql = $this->datadeal->getsql($this->_table,$option['content']);
 		
 		$contentid = $this->ndb->insert($insertsql);
 		if($contentid){
@@ -97,12 +98,13 @@ class Picture extends Model {
 		$table = "cmstop_picture";
 		$option['pircure']['contentid'] = $contentid;
 		$option['pircure']['description'] = $data['description'] ? addslashes(substr($data['description'],0,255)): null;
-		$option['pircure']['content'] = addslashes($this->migrate->dealcontent($data['content']));
+		$option['pircure']['description2'] = $data['description'] ? addslashes($data['description']): null;
+		$option['pircure']['content'] = addslashes($this->datadeal->dealcontent($data['content']));
 		$option['pircure']['editor'] = $data['author'] ? substr($data['author'],0,20) : null;
 
 		$picgroupdata = string2array($data['pictureurls']);
 		$total = count($picgroupdata);
-		$option['pircure']['total'] = $total;
+		$option['pircure']['total'] = $total ? $total : 0;
 
 		$option['pircure']['id'] = intval($data['id']);
 		$option['pircure']['typeid'] = $data['typeid'] ? substr($data['typeid'],0,255) : null;
@@ -112,12 +114,12 @@ class Picture extends Model {
 		$option['pircure']['atype'] = $data['atype'] ? substr($data['atype'],0,255) : null;
 		$option['pircure']['dtype'] = $data['dtype'] ? substr($data['dtype'],0,255) : null;
 		
-		
-
-		$insertsql = $this->migrate->getsql($table,$option['pircure']);
+		$insertsql = $this->datadeal->getsql($table,$option['pircure']);
 		$res = $this->ndb->insert($insertsql);
 		// var_dump($this->ndb->error());
 		if($res){
+			$this->related->insertrelated($contentid,$data['specialid']);
+			$this->property->insertdistrict($contentid,$data['specialid']);
 			self::insertpicturegroup($contentid,$picgroupdata);
 			self::insertsearch($contentid);
 			self::inserttags($contentid,$data);
@@ -131,11 +133,11 @@ class Picture extends Model {
 			foreach ($picgroupdata as $v) {
 				$option['pircure_group']['contentid'] = $contentid;
 				$option['pircure_group']['aid'] = null;
-				$option['pircure_group']['image'] = $this->migrate->imagehandle($v['url']);
+				$option['pircure_group']['image'] = $this->datadeal->imagehandle($v['url']);
 				$option['pircure_group']['note'] = $v['alt'] ? addslashes(substr($v['alt'],0,255)): null ;
 				$option['pircure_group']['url'] = null;
 				$option['pircure_group']['sort'] = intval($v['listorder']);
-				$insertsql = $this->migrate->getsql($table,$option['pircure_group']);
+				$insertsql = $this->datadeal->getsql($table,$option['pircure_group']);
 				$insertid = $this->ndb->insert($insertsql);
 				$res[] = $insertid;
 			}
@@ -187,19 +189,19 @@ class Picture extends Model {
 	/*清理迁移数据，还原数据表*/
 	public	function clear(){
 
-		$contentid = 26662;
+		$contentid = 0;
 		$this->ndb->delete("delete from cmstop_picture where `contentid`>$contentid");
-		$this->migrate->auto_increment('cmstop_picture',($contentid+1));
+		$this->datadeal->auto_increment('cmstop_picture',($contentid+1));
 		write_file("cmstop_picture","删除表：cmstop_article的contentid>$contentid的用户数据。设置主键自增！");
 		$this->ndb->delete("delete from cmstop_picture_group where `contentid`>$contentid");
-		$this->migrate->auto_increment('cmstop_picture_group');
+		$this->datadeal->auto_increment('cmstop_picture_group');
 		write_file("cmstop_picture_group","删除表：cmstop_article的contentid>$contentid的用户数据。设置主键自增！");
 		$this->ndb->delete("delete from $this->_table where `contentid`>$contentid");
-		$this->migrate->auto_increment($this->_table,($contentid+1));
+		$this->datadeal->auto_increment($this->_table,($contentid+1));
 		write_file($this->_table,"删除表：$this->_table的contentid>$contentid的用户数据。设置主键自增！");
 
 		$this->ndb->delete("delete from cmstop_removal_log where `type`='picture'");
-		$this->migrate->auto_increment('cmstop_removal_log');
+		$this->datadeal->auto_increment('cmstop_removal_log');
 	}
 
 }

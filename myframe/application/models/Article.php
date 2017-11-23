@@ -8,12 +8,14 @@ class Article extends Model {
 	function __construct() {
 		parent::__construct();
 		$this->_table = "cmstop_content";
-		$this->migrate = model('Migrate');
+		$this->datadeal = model('Datadeal');
 		$this->tags = model('Tags');
 		$this->source = model('Source');
 		$this->property = model('Property');
 		$this->search = model('Search');
 		$this->log = model('Log');
+		$this->related = model('Related');
+
 		//定义每次查询的数据条数
 		$this->length = 100;
 
@@ -68,7 +70,7 @@ class Article extends Model {
 		$option['content']['modelid'] = 1;
 		$option['content']['title'] = addslashes(substr($data['title'],0,200));
 		$option['content']['subtitle'] = addslashes(substr($data['subtitle'],0,120));
-		$option['content']['thumb'] = $this->migrate->imagehandle($data['thumb']);
+		$option['content']['thumb'] = $this->datadeal->imagehandle($data['thumb']);
 		$option['content']['status'] = in_array($data['status'], array(0,1)) ? 0 : 6;
 		$option['content']['created'] = $data['inputtime'];
 		$option['content']['createdby'] = 1;
@@ -81,7 +83,7 @@ class Article extends Model {
 		$option['content']['tags'] = substr($data['keywords'],0,200);
 		$option['content']['sourceid'] = self::insertsource($data);
 
-		$insertsql = $this->migrate->getsql($this->_table,$option['content']);
+		$insertsql = $this->datadeal->getsql($this->_table,$option['content']);
 		
 		$contentid = $this->ndb->insert($insertsql);
 		if($contentid){
@@ -100,7 +102,8 @@ class Article extends Model {
 		$table = "cmstop_article";
 		$option['article']['contentid'] = $contentid;
 		$option['article']['description'] = $data['description'] ? addslashes(substr($data['description'],0,255)): null;
-		$option['article']['content'] = addslashes($this->migrate->dealcontent($data['content']));
+		$option['article']['description2'] = $data['description'] ? addslashes($data['description']): null;
+		$option['article']['content'] = addslashes($this->datadeal->dealcontent($data['content']));
 		$option['article']['author'] = $data['author'] ? substr($data['author'],0,20) : null;
 		$option['article']['id'] = intval($data['id']);
 		$option['article']['typeid'] = $data['typeid'] ? substr($data['typeid'],0,255) : null;
@@ -114,12 +117,14 @@ class Article extends Model {
 		$option['article']['title_prefix'] = $data['title_prefix'] ? substr($data['title_prefix'],0,255) : null;
 		$option['article']['downfiles'] = $downfiles = self::getdownfiles($data['downfiles']);
 
-		$insertsql = $this->migrate->getsql($table,$option['article']);
+		$insertsql = $this->datadeal->getsql($table,$option['article']);
 		$res = $this->ndb->insert($insertsql);
-		console($this->ndb->error());
+		// console($this->ndb->error());
 		if($res){
 			self::insertsearch($contentid,$data);
 			self::insertproperty($contentid,$data);
+			$this->related->insertrelated($contentid,$data['specialid']);
+			$this->property->insertdistrict($contentid,$data['specialid']);
 			self::inserttags($contentid,$data);
 			self::insertlog($contentid,$data);
 		}else{
@@ -148,11 +153,10 @@ class Article extends Model {
 
 	/*处理文章属性数据*/
 	function insertproperty($contentid,$data){
-
+		
 		
 		$idata['contentid'] = $contentid;
 		$idata['proid'] = $this->propertyids[$data['dtypes']];
-
 		
 		$this->property->insert($idata);
 	}
@@ -168,7 +172,7 @@ class Article extends Model {
 	}
 
 
-	/*处理tags关键词数据处理*/
+	/*处理日志数据*/
 	function insertlog($contentid,$data){
 		$idata = array(
 										'type'=>'article',
@@ -198,7 +202,7 @@ class Article extends Model {
 		$array = string2array($downfiles);
 		if(!empty($array)){
 			foreach ($array as $k => $v) {
-					$v['fileurl'] = $this->migrate->imagehandle($v['fileurl']);
+					$v['fileurl'] = $this->datadeal->imagehandle($v['fileurl']);
 					$return[$k] = $v;
 			}
 		}
@@ -208,21 +212,23 @@ class Article extends Model {
 	}
 
 	/*清理迁移数据，还原数据表*/
-	public	function clear($contentid){
+	public	function clear(){
 
-		$contentid = 2;
-		$this->ndb->delete("delete from cmstop_article where `contentid`>1");
-		$this->migrate->auto_increment('cmstop_article',2);
+		$contentid = 1;
+		$this->ndb->delete("delete from cmstop_article where `contentid`>0");
+		$this->datadeal->auto_increment('cmstop_article',1);
 		write_file("cmstop_article","删除表：cmstop_article的contentid=$contentid的用户数据。设置主键自增！");
-		$this->ndb->delete("delete from $this->_table where `contentid`>1");
-		$this->migrate->auto_increment($this->_table,2);
+		$this->ndb->delete("delete from $this->_table where `contentid`>0");
+		$this->datadeal->auto_increment($this->_table,1);
 		write_file("cmstop_content","删除表：$this->_table的contentid=$contentid的用户数据。设置主键自增！");
 
-		$this->tags->delete(1);
-		$this->property->delete(1);
+		$this->tags->delete();
+		$this->datadeal->auto_increment('cmstop_tag');
+		$this->source->delete();
+		$this->datadeal->auto_increment('cmstop_source');
 
-		$this->ndb->delete("delete from cmstop_removal_log where `type`='article'");
-		$this->migrate->auto_increment('cmstop_removal_log',1);
+		$this->ndb->delete("delete from cmstop_removal_log");
+		$this->datadeal->auto_increment('cmstop_removal_log');
 	}
 
 }

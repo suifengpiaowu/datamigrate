@@ -5,10 +5,11 @@
 class RemovalController extends Controller {
 
 	function __construct() {
-		$this->article = model('Article');
-		$this->picture = model('Picture');
-		$this->video = model('Video');
-		$this->special = model('Special');
+		// $this->article = model('Article');
+		// $this->picture = model('Picture');
+		// $this->video = model('Video');
+		// $this->special = model('Special');
+		$this->even = model('Even');
 	}
 
 	public function runarticle(){
@@ -41,5 +42,13 @@ class RemovalController extends Controller {
 
 	public function clearspecial(){
 		$this->special->clear();
+	}
+
+	public function runeven(){
+		$this->even->run();
+	}
+
+	public function cleareven(){
+		$this->even->clear();
 	}
 }

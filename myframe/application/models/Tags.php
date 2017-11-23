@@ -48,13 +48,12 @@ class Tags extends Model
 		$tagid = $this->ndb->insert($sql);
 	}
 
-	function delete($contentid){
-		$delsql = "delete from cmstop_content_tag where `contentid`!=$contentid";
-
+	function delete(){
+		$delsql = "delete from $this->_table";
 		$res = $this->ndb->delete($delsql);
 		if($res){
-			$log = "Delete执行成功：".$contentid."\r\n";
-			write_file('cmstop_content_tag',$log,true);
+			$log = "$this->_table 删除执行成功 \r\n";
+			write_file($this->_table,$log,true);
 		}
 		return true;
 	}

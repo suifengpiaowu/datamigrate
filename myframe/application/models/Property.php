@@ -8,6 +8,36 @@ class Property extends Model
 		parent::__construct();
 		$this->_table = 'cmstop_content_property';
 		$this->datadeal = model('Datadeal');
+		$this->district = config('district');
+		$this->bookproperty = config('bookproperty');
+		
+
+	}
+
+	/*处理地区属性关系数据*/
+	function insertdistrict($contentid,$proids){
+		$array = explode(',',$proids);
+		if(!empty($array)){
+			foreach ($array as $value) {
+				$proid = $this->district[$value];
+				if($proid ){
+					$idata['contentid'] = $contentid;
+					$idata['proid'] = $proid;
+					self::insert($idata);
+				}else{
+					continue;
+				}
+			}
+		}
+	}
+
+	/*处理图书属性关系数据*/
+	function insertbook($contentid,$oldcatid){
+		if($proid = $this->bookproperty[$oldcatid]){
+			$idata['contentid'] = $contentid;
+			$idata['proid'] = $proid;
+			self::insert($idata);
+		}
 	}
 
 	/**

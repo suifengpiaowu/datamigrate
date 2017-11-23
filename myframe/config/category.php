@@ -1,6 +1,6 @@
 <?php
 
-// 此文件新旧栏目对应关系
+// 此文件新旧栏目对应关系reform_article catid => cmstop_category catid
 
 
 return  array(

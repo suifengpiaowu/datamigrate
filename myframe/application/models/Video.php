@@ -14,12 +14,12 @@ class Video extends Model {
 		$this->property = model('Property');
 		$this->search = model('Search');
 		$this->log = model('Log');
+		$this->related = model('Related');
+		
 		//定义每次查询的数据条数
 		$this->length = 1;
 
-		$this->category = config('category');
-
-	}
+		$this->category = config('category');	}
 
 	/*数据迁移运行*/
 	public	function run(){
@@ -97,6 +97,7 @@ class Video extends Model {
 		$option['video']['contentid'] = $contentid;
 		$option['video']['aid'] = 0;
 		$option['video']['description'] = $data['description'] ? addslashes(substr($data['description'],0,255)): null;
+		$option['video']['description2'] = $data['description'] ? addslashes($data['description']): null;
 		$option['video']['playtime'] = null;
 		$option['video']['editor'] = $data['author'] ? substr($data['author'],0,20) : null;
 		$option['video']['listid'] = 0;
@@ -113,6 +114,9 @@ class Video extends Model {
 		$res = $this->ndb->insert($insertsql);
 		// var_dump($this->ndb->error());
 		if($res){
+			$this->related->insertrelated($contentid,$data['specialid']);
+			$this->property->insertdistrict($contentid,$data['specialid']);
+
 			self::insertsearch($contentid);
 			self::inserttags($contentid,$data);
 			self::insertlog($contentid,$data);
@@ -124,7 +128,7 @@ class Video extends Model {
 		$videos = $this->odb->select("select * from reform_attachment_content where contentid=$id order by listorder asc");
 		foreach ($videos as $k => $v) {
 			$array[$k]['title'] = addslashes($v['title']);
-			$array[$k]['videourl'] = $this->datadeal->imagehandle($data['url']);
+			$array[$k]['videourl'] = $this->datadeal->imagehandle($v['url']);
 			$array[$k]['playtime'] =addslashes($v['timelen']);
 			$array[$k]['listorder'] =addslashes($v['listorder']);
 		}
@@ -150,13 +154,13 @@ class Video extends Model {
 		return $return;
 	}
 
+
 	/*处理tags关键词数据处理*/
 	function inserttags($contentid,$data){
 		
 		$idata['contentid'] = $contentid;
 		$idata['tags'] = $data['keywords'];
 
-		
 		$this->tags->insert($idata);
 	}
 

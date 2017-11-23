@@ -30,3 +30,12 @@ apache配置：
 	   #将所有其他URL重写到 index.php/URL
 	   RewriteRule ^(.*)$ index.php?url=$1 [PT,L]
 	</IfModule>
+
+
+数据迁移脚本使用方法:
+1.搭建本地 lnmp 环境
+2.引入 nginx 配置
+3.本地 hosts 绑定
+4.进入入口文所在的目录/public/
+5.进入 cmd 命令窗口 或 linux命令行 运行php命令(命令已经列出来了,迁移的时候使用是空库,如果是做数据的增量迁移,此脚本不能执行.)
+6.命令需要按照顺序执行,否则关联关系无法对应(除了清除命令)
